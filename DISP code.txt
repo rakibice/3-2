@@ -1,0 +1,589 @@
+1.
+import os
+import cv2
+import numpy as np
+
+def resize_images(input_folder, output_folder, target_size=(300, 300)):
+    os.makedirs(output_folder, exist_ok=True)
+    for filename in os.listdir(input_folder):
+        img_path = os.path.join(input_folder, filename)
+        img = cv2.imread(img_path)
+        resized_img = cv2.resize(img, target_size)
+        output_path = os.path.join(output_folder, filename)
+        cv2.imwrite(output_path, resized_img)
+    print("resized image and save a folder done!")
+    return output_folder
+
+def apply_color_transform(input_folder, output_folder):
+    os.makedirs(output_folder, exist_ok=True)
+    for filename in os.listdir(input_folder):
+        img_path = os.path.join(input_folder, filename)
+        img = cv2.imread(img_path)
+        # Example color transformation (convert to grayscale)
+        transformed_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        output_path = os.path.join(output_folder, filename)
+        cv2.imwrite(output_path, transformed_img)
+    print("apply color_transform and save a folder done!")
+
+def normalize_images(input_folder, output_folder):
+    os.makedirs(output_folder, exist_ok=True)
+    for filename in os.listdir(input_folder):
+        img_path = os.path.join(input_folder, filename)
+        img = cv2.imread(img_path).astype(np.float32)
+        # Example normalization (scaling pixel values to [0, 1])
+        normalized_img = img / 255.0
+        output_path = os.path.join(output_folder, filename)
+        cv2.imwrite(output_path, normalized_img * 255.0)
+    print("normalize images and save a folder done!")
+
+def filter_images(input_folder, output_folder):
+    os.makedirs(output_folder, exist_ok=True)
+    for filename in os.listdir(input_folder):
+        img_path = os.path.join(input_folder, filename)
+        img = cv2.imread(img_path)
+        # Example filtering (Gaussian blur)
+        filtered_img = cv2.GaussianBlur(img, (5, 5), 0)
+        output_path = os.path.join(output_folder, filename)
+        cv2.imwrite(output_path, filtered_img)
+    print("apply filter and save a folder done!")
+
+if __name__ == "__main__":
+    input_folder = "cat"
+    output_folder_resized = "cat_resized"
+    output_folder_transformed = "cat_resized_color_transformed"
+    output_folder_normalized = "cat_resized_normalized"
+    output_folder_filtered = "cat_resized_filtered"
+
+    resized_folder = resize_images(input_folder, output_folder_resized)
+    apply_color_transform(resized_folder, output_folder_transformed)
+    normalize_images(resized_folder, output_folder_normalized)
+    filter_images(resized_folder, output_folder_filtered)
+
+
+2.
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+# Read the input image
+input_image = cv2.imread("cat-7.jpg") # Change this to the path of your input image
+# Convert image to grayscale
+gray = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
+# Apply thresholding
+_, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+# Find contours
+contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+# Create a blank canvas for drawing contours
+segmented_image = np.zeros_like(input_image)
+# Draw contours on the blank canvas
+cv2.drawContours(segmented_image, contours, -1, (255, 255, 255), thickness=cv2.FILLED)
+# Convert segmented image to grayscale
+segmented_image_gray = cv2.cvtColor(segmented_image, cv2.COLOR_BGR2GRAY)# Display input and segmented images side by side
+plt.figure(figsize=(10, 5))
+# Display input image
+plt.subplot(1, 2, 1)
+plt.imshow(cv2.cvtColor(input_image, cv2.COLOR_BGR2RGB))
+plt.title('Input Image')
+plt.axis('off')
+# Display segmented image in black and white
+plt.subplot(1, 2, 2)
+plt.imshow(segmented_image_gray, cmap='gray')
+plt.title('Segmented Image (Black and White)')
+plt.axis('off')
+plt.show()
+
+
+3.
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+# Load the image and the mask
+image = cv2.imread('main.jpg')
+mask = cv2.imread('mask.jpg', cv2.IMREAD_GRAYSCALE)
+# Verify if images are loaded correctly
+print("Image shape:", image.shape)
+print("Mask shape:", mask.shape)
+# Define pixel size of the image (e.g., pixel_size = 0.01 for 1 cm x 1 cm pixel)
+pixel_size = 0.01 # Example: Assuming each pixel corresponds to 1 square centimeter
+# Determine the region of interest in the image using the mask
+region_of_interest = cv2.bitwise_and(image, image, mask=mask)
+# Compute the area of the region
+pixel_area = np.sum(mask != 0) # Count non-zero pixels in the mask
+area = pixel_area * pixel_size
+print("Area of the region:", area, "square units")
+# Label the region by overlapping the mask over the image
+labeled_image = cv2.addWeighted(image, 0.5, cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR), 0.5, 0)
+# Plotting
+fig, axes = plt.subplots(1, 3, figsize=(12, 4))
+# Display the original image
+axes[0].imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+axes[0].set_title('Original Image')
+# Display the mask image
+axes[1].imshow(mask, cmap='gray')
+axes[1].set_title('Mask Image')
+# Display the overlapped image
+axes[2].imshow(cv2.cvtColor(labeled_image, cv2.COLOR_BGR2RGB))
+axes[2].set_title('Overlapped Image')
+plt.show()
+
+
+4.
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+# Load the image
+image = cv2.imread('cat-2.jpg', cv2.IMREAD_GRAYSCALE)
+# Negation transformation
+negation_image = 255 - image
+# Plotting
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 2, 1)
+plt.imshow(image, cmap='gray')
+plt.title('Original Image')
+plt.subplot(1, 2, 2)
+plt.imshow(negation_image, cmap='gray')
+plt.title('Negation Transformation')
+plt.show
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+# Load the image
+image = cv2.imread('cat-2.jpg', cv2.IMREAD_GRAYSCALE)
+# Log transformation
+c = 255 / np.log(1 + np.max(image))
+log_image = c * (np.log(image + 1))
+# Normalize the image
+log_image = np.uint8(log_image)
+# Plotting
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 2, 1)
+plt.imshow(image, cmap='gray')
+plt.title('Original Image')
+plt.subplot(1, 2, 2)
+plt.imshow(log_image, cmap='gray')
+plt.title('Log Transformation')
+plt.show()
+
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+# Load the image
+image = cv2.imread('cat-2.jpg',
+cv2.IMREAD_GRAYSCALE)
+# Power law transformation
+gamma = 1.5
+power_law_image = np.power(image, gamma)
+# Normalize the image
+power_law_image = np.uint8(power_law_image)
+# Plotting
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 2, 1)
+plt.imshow(image, cmap='gray')
+plt.title('Original Image')
+plt.subplot(1, 2, 2)
+plt.imshow(power_law_image, cmap='gray')
+plt.title('Power Law Transformation')
+plt.show()
+
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+# Load the image
+image = cv2.imread('cat-2.jpg',
+cv2.IMREAD_GRAYSCALE)
+# Piece-wise linear transformation
+piecewise_image = np.zeros_like(image)
+piecewise_image = cv2.addWeighted(image, 0.5,
+piecewise_image, 0, 0)
+piecewise_image = cv2.addWeighted(image, 1.5,
+piecewise_image, 0, 0)
+# Plotting
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 2, 1)
+plt.imshow(image, cmap='gray')
+plt.title('Original Image')
+plt.subplot(1, 2, 2)
+plt.imshow(piecewise_image, cmap='gray')
+plt.title('Piece-wise Linear Transformation')
+plt.show()
+
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+# Load the image
+image = cv2.imread('cat-2.jpg',
+cv2.IMREAD_GRAYSCALE)
+# Define the high pass filter kernel
+kernel = np.array([[0, -1, 0],
+[-1, 5, -1],
+[0, -1, 0]])
+# Apply the high pass filter
+high_pass_image = cv2.filter2D(image, -1, kernel)
+# Plotting
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 2, 1)
+plt.imshow(image, cmap='gray')
+plt.title('Original Image')
+plt.subplot(1, 2, 2)
+plt.imshow(high_pass_image, cmap='gray')
+plt.title('High Pass Filter (Sharpening)')
+plt.show()
+
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+# Load the image
+image = cv2.imread('cat-2.jpg',
+cv2.IMREAD_GRAYSCALE)
+# Define the low pass filter kernel
+kernel = np.ones((5, 5), np.float32) / 25
+# Apply the low pass filter
+low_pass_image = cv2.filter2D(image, -1, kernel)
+# Plotting
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 2, 1)
+plt.imshow(image, cmap='gray')
+plt.title('Original Image')
+plt.subplot(1, 2, 2)
+plt.imshow(low_pass_image, cmap='gray')
+plt.title('Low Pass Filter (Smoothing)')
+plt.show()
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load the image
+image = cv2.imread('cat-2.jpg', cv2.IMREAD_GRAYSCALE)
+
+# Apply the Laplacian filter
+laplacian_image = cv2.Laplacian(image, cv2.CV_64F)
+
+# Normalize the image
+laplacian_image = cv2.convertScaleAbs(laplacian_image)
+
+# Plotting
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 2, 1)
+plt.imshow(image, cmap='gray')
+plt.title('Original Image')
+plt.subplot(1, 2, 2)
+plt.imshow(laplacian_image, cmap='gray')
+plt.title('Laplacian Filter')
+plt.show()
+
+
+
+5.
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load the image
+image = cv2.imread('cat-7.jpg', cv2.IMREAD_GRAYSCALE)
+
+# Canny edge detection
+canny_edges = cv2.Canny(image, 100, 200)
+
+# Prewitt edge detection
+kernelx = np.array([[1, 1, 1], [0, 0, 0], [-1, -1, -1]])
+kernely = np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]])
+prewitt_edges_x = cv2.filter2D(image, -1, kernelx)
+prewitt_edges_y = cv2.filter2D(image, -1, kernely)
+prewitt_edges = cv2.magnitude(prewitt_edges_x.astype(np.float64), prewitt_edges_y.astype(np.float64))
+
+# Sobel edge detection
+sobel_edges_x = cv2.Sobel(image, cv2.CV_64F, 1, 0, ksize=5)
+sobel_edges_y = cv2.Sobel(image, cv2.CV_64F, 0, 1, ksize=5)
+sobel_edges = cv2.magnitude(sobel_edges_x, sobel_edges_y)
+
+# Plotting
+plt.figure(figsize=(15, 5))
+plt.subplot(1, 4, 1)
+plt.imshow(image, cmap='gray')
+plt.title('Original Image')
+plt.axis('off')
+plt.subplot(1, 4, 2)
+plt.imshow(canny_edges, cmap='gray')
+plt.title('Canny Edges')
+plt.axis('off')
+plt.subplot(1, 4, 3)
+plt.imshow(prewitt_edges.astype(np.uint8), cmap='gray')
+plt.title('Prewitt Edges')
+plt.axis('off')
+plt.subplot(1, 4, 4)
+plt.imshow(sobel_edges.astype(np.uint8), cmap='gray')
+plt.title('Sobel Edges')
+plt.axis('off')
+plt.show()
+
+
+
+6.
+import numpy as np
+import librosa
+import librosa.display
+import matplotlib.pyplot as plt
+from scipy.io import wavfile
+from IPython.display import Audio, display
+
+# Example usage:
+file_path = "speech.wav"
+
+
+# Load the audio file with Librosa
+signal, sr = librosa.load(file_path, sr=None)
+
+# Identify sampling frequency and bit resolution
+print('Original Sampling Frequency:', sr)
+print('Original Bit Resolution:', signal.dtype)
+
+
+
+# Play the original signal
+display(Audio(signal, rate=sr))
+
+# Set sampling frequency to 8000 Hz
+sr_8000 = 8000
+signal_resampled = librosa.resample(signal, orig_sr=sr, target_sr=sr_8000)
+# Reduce bit resolution to 16 bits
+signal_resampled_16bit = (signal_resampled * 32767).astype(np.int16)
+
+# Identify sampling frequency and bit resolution of the resampled signal
+print('Resampled Sampling Frequency:', sr_8000)
+print('Resampled Bit Resolution:', signal_resampled_16bit.dtype)
+
+# Save the resampled signal with reduced bit resolution
+wavfile.write('speech_signal_8000Hz_16bit.wav', sr_8000, signal_resampled_16bit)
+
+
+# Play the resampled signal
+display(Audio(signal_resampled, rate=sr_8000))
+
+
+7.
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
+
+# Read the audio file
+y, fs = librosa.load('speech.wav', sr=None)
+
+# Define frame size and overlap (in samples)
+frame_size = 256
+overlap = 128
+
+# Calculate number of frames
+num_frames = int(np.floor(len(y) / (frame_size - overlap)))
+
+# Initialize variables
+voiced_frames = []
+unvoiced_frames = []
+silence_frames = []
+
+# Iterate through each frame
+for i in range(num_frames):
+    # Extract current frame
+    start_idx = i * (frame_size - overlap)
+    end_idx = start_idx + frame_size
+    frame = y[start_idx:end_idx]
+    
+    # Calculate energy of the frame
+    energy = np.sum(np.abs(frame) ** 2)
+    
+    # Calculate zero-crossing rate (ZCR)
+    zcr = np.sum(np.diff(np.sign(frame)) != 0)
+    
+    # Thresholds for voiced, unvoiced, and silence detection
+    voiced_threshold = 0.01 * np.max(energy)  # adjust threshold based on your audio
+    unvoiced_threshold = 0.001 * np.max(energy)  # adjust threshold based on your audio
+    silence_threshold = 0.0001 * np.max(energy)  # adjust threshold based on your audio
+    
+    # Identify frame type based on energy and ZCR
+    if energy > voiced_threshold and zcr > 10:  # adjust values for voiced detection
+        voiced_frames.append((start_idx, end_idx))
+    elif energy > unvoiced_threshold and zcr < 10:  # adjust values for unvoiced detection
+        unvoiced_frames.append((start_idx, end_idx))
+    else:
+        silence_frames.append((start_idx, end_idx))
+
+# Calculate time axis for plotting
+time_axis = np.arange(len(y)) / fs
+
+# Plot original signal
+plt.figure(figsize=(10, 5))
+plt.plot(time_axis, y, 'k')  # black for original signal
+
+# Plot voiced, unvoiced, and silence regions
+for start_idx, end_idx in voiced_frames:
+    plt.axvspan(start_idx / fs, end_idx / fs, color='green', alpha=0.3)
+for start_idx, end_idx in unvoiced_frames:
+    plt.axvspan(start_idx / fs, end_idx / fs, color='red', alpha=0.3)
+for start_idx, end_idx in silence_frames:
+    plt.axvspan(start_idx / fs, end_idx / fs, color='blue', alpha=0.3)
+
+# Add legend with color names
+legend_elements = [
+    Patch(facecolor='green', alpha=0.3, label='Voiced'),
+    Patch(facecolor='red', alpha=0.3, label='Unvoiced'),
+    Patch(facecolor='blue', alpha=0.3, label='Silence')
+]
+plt.legend(handles=legend_elements, loc='upper right')
+
+plt.xlabel('Time (s)')
+plt.ylabel('Amplitude')
+plt.title('Original Signal with Voiced, Unvoiced, and Silence Regions')
+
+plt.show()
+
+
+
+8.
+import numpy as np
+import scipy.io.wavfile as wavfile
+from scipy.signal import get_window
+
+def zerocrossingrate(signal, window, overlap):
+    frame_length = len(window)
+    step_size = frame_length - overlap
+    num_frames = int(np.floor((len(signal) - overlap) / step_size))
+    padded_signal_length = frame_length + (num_frames - 1) * step_size + overlap  # Adjusted calculation
+    padded_signal = np.pad(signal, (0, padded_signal_length - len(signal)), 'constant')
+    zcr = np.zeros(num_frames)
+
+    for i in range(num_frames):
+        start_index = i * step_size
+        end_index = start_index + frame_length
+        frame = padded_signal[start_index:end_index]
+        zcr[i] = np.sum(np.abs(np.diff(frame > 0))) / (2 * frame_length)
+
+    avg_zcr = np.mean(zcr)
+    return avg_zcr
+
+
+# Load the speech signal
+sampling_frequency, speech_signal = wavfile.read('speech.wav')
+
+# Define window size and overlap
+window_size = int(0.02 * sampling_frequency)  # 20 ms window size
+overlap = int(0.5 * window_size)  # 50% overlap
+
+# Compute the zero crossing rate (ZCR) using different window functions
+window_functions = [np.hamming, np.hanning, np.blackman]
+num_window_functions = len(window_functions)
+zcr_values = np.zeros(num_window_functions)
+
+# Compute ZCR for each window function
+for i, window_func in enumerate(window_functions):
+    # Apply the current window function
+    window = window_func(window_size)
+
+    # Compute the ZCR for the entire signal using the current window function
+    zcr_values[i] = zerocrossingrate(speech_signal, window, overlap)
+
+# Display ZCR values
+print('Zero Crossing Rate (ZCR) using different window functions:')
+for i, window_func in enumerate(window_functions):
+    print(f'{window_func.__name__} window function: {zcr_values[i]:.2f}')
+
+
+
+9.
+import numpy as np
+import librosa
+import librosa.display
+import matplotlib.pyplot as plt
+from IPython.display import Audio, display
+
+def compute_short_term_autocorrelation(cut_signal, sr, frame_length, hop_length, type):
+
+    # Compute short-term autocorrelation
+    auto_corr = librosa.autocorrelate(y=cut_signal, max_size=frame_length)
+
+    # Plot speech waveform and autocorrelation
+    plt.figure(figsize=(12, 6))
+
+    # Plot speech waveform
+    plt.subplot(2, 1, 1)
+    librosa.display.waveshow(cut_signal, sr=sr, alpha=0.5)
+    plt.xlabel('Time (s)')
+    plt.ylabel('Amplitude')
+    plt.title(type +' Speech Waveform (Cut for 30ms)')
+    plt.grid(True)
+
+    # Plot autocorrelation
+    plt.subplot(2, 1, 2)
+    plt.plot(librosa.frames_to_time(range(len(auto_corr)), hop_length=hop_length), auto_corr)
+    plt.xlabel('Time (s)')
+    plt.ylabel('Autocorrelation')
+    plt.title('Short-term Autocorrelation of ' + type + ' Speech Signal')
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.show()
+
+# Usage example
+audio_file = "speech.wav"
+# Load the audio file
+signal, sr = librosa.load(audio_file, sr=None)
+# Parameters
+frame_duration = 0.03  # 30 ms frame duration
+hop_duration = frame_duration / 2  # Half of frame duration for 50% overlap
+
+# Convert durations to samples
+frame_length = int(sr * frame_duration)
+hop_length = int(sr * hop_duration)
+
+# Cut a portion of the speech signal (for example, for 30 ms)
+cut_signal = signal[int(5*sr) : int(5.03*sr)]
+compute_short_term_autocorrelation(cut_signal, sr, frame_length, hop_length, 'Voiced')
+
+# Cut a portion of the speech signal (for example, for 30 ms)
+cut_signal = signal[int(4*sr) : int(4.03*sr)]
+compute_short_term_autocorrelation(cut_signal, sr, frame_length, hop_length, 'Unvoiced')
+
+
+
+10.
+import numpy as np
+import matplotlib.pyplot as plt
+import librosa
+# Read the speech segment from the WAV file using Librosa
+# y, Fs = librosa.load(r"C:\Users\Win-10\OneDrive\Desktop\Lab_3.2\Recording.wav", sr=None)
+y, Fs = librosa.load(r"speech.wav", sr=None)
+# Cut a portion of the speech signal (for example, for 30 ms)
+start_time = 4.515
+end_time = 4.545
+y = y[int(start_time * Fs):int(end_time * Fs)]
+# Compute autocorrelation
+autocorrelation = np.correlate(y, y, mode='full')
+# Time axis for autocorrelation plot (in milliseconds)
+kk = np.arange(0, len(autocorrelation)) / Fs * 1000
+# Plot original signal
+plt.subplot(2, 1, 1)
+# plt.plot(np.arange(len(y)) / Fs * 1000, y)
+librosa.display.waveshow(y, sr=Fs, alpha=0.5)
+plt.xlabel('Time in milliseconds')
+plt.ylabel('Amplitude')
+plt.title('A 30 millisecond segment of speech')
+# Plot autocorrelation
+plt.subplot(2, 1, 2)
+plt.plot(kk, autocorrelation)
+plt.xlabel('Time in milliseconds')
+plt.ylabel('Autocorrelation')
+plt.title('Autocorrelation of the 30 millisecond segment of speech')
+# Extract relevant part of autocorrelation (21 to 160)
+auto = autocorrelation[20:160]
+# Find the maximum value and corresponding sample number
+max_idx = np.argmax(auto)
+sample_no = max_idx + 21 # Adjust for the indexing
+pitch_period_To = (20 + sample_no) * (1 / Fs)
+pitch_freq_Fo = 1 / pitch_period_To
+print("Pitch Period (To):", pitch_period_To)
+print("Pitch Frequency (Fo):", pitch_freq_Fo)
+plt.tight_layout()
+plt.show()
